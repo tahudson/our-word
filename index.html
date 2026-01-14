@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Word</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-slate-50 min-h-screen flex items-center justify-center font-sans text-slate-900">
+
+    <div id="app" class="w-full max-w-md p-6">
+        <!-- Loading State -->
+        <div id="loading-view" class="flex flex-col items-center justify-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+            <p class="mt-4 text-slate-600 font-medium">Connecting...</p>
+        </div>
+
+        <!-- Main Card -->
+        <div id="main-view" class="hidden bg-white rounded-3xl shadow-xl p-8 transition-all">
+            <div id="display-mode" class="flex flex-col items-center gap-8">
+                <h1 id="word-display" class="text-5xl md:text-6xl font-black text-center break-words leading-tight">...</h1>
+                <button onclick="toggleEdit(true)" class="flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-full font-semibold active:scale-95 transition-transform">
+                    <i data-lucide="edit-2" class="w-4 h-4"></i>
+                    Change
+                </button>
+            </div>
+
+            <div id="edit-mode" class="hidden flex flex-col items-center gap-6">
+                <input type="text" id="word-input" class="w-full text-3xl font-bold text-center border-b-2 border-blue-500 outline-none py-2 bg-transparent" placeholder="Type something...">
+                <div class="flex justify-center gap-4">
+                    <button onclick="toggleEdit(false)" class="p-3 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+                    <button onclick="saveWord()" class="p-3 rounded-full bg-blue-500 text-white hover:bg-blue-600 shadow-lg shadow-blue-200">
+                        <i data-lucide="check" class="w-6 h-6"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <p class="text-center mt-8 text-slate-400 text-sm font-medium">Updates instantly for both of you</p>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        // TODO: REPLACE THIS WITH YOUR FIREBASE CONFIG FROM FIREBASE CONSOLE
+        const firebaseConfig = {
+          apiKey: "AIzaSyCY6900iRbXDdhvsPVJvnsC7rAdnlSQ1zE",
+          authDomain: "oneword-1f63a.firebaseapp.com",
+          projectId: "oneword-1f63a",
+          storageBucket: "oneword-1f63a.firebasestorage.app",
+          messagingSenderId: "385260676763",
+          appId: "1:385260676763:web:41665cd97f6c65db12483e",
+          measurementId: "G-GS867XC7T7"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const docRef = doc(db, "settings", "sharedWord");
+
+        // UI Elements
+        const loadingView = document.getElementById('loading-view');
+        const mainView = document.getElementById('main-view');
+        const displayMode = document.getElementById('display-mode');
+        const editMode = document.getElementById('edit-mode');
+        const wordDisplay = document.getElementById('word-display');
+        const wordInput = document.getElementById('word-input');
+
+        // Logic
+        window.toggleEdit = (editing) => {
+            if (editing) {
+                wordInput.value = wordDisplay.innerText === 'Tap to set word' ? '' : wordDisplay.innerText;
+                displayMode.classList.add('hidden');
+                editMode.classList.remove('hidden');
+                wordInput.focus();
+            } else {
+                displayMode.classList.remove('hidden');
+                editMode.classList.add('hidden');
+            }
+        };
+
+        window.saveWord = async () => {
+            const val = wordInput.value.trim();
+            if (!val) return;
+            try {
+                await setDoc(docRef, { value: val });
+                toggleEdit(false);
+            } catch (e) { console.error(e); }
+        };
+
+        // Initialize
+        signInAnonymously(auth).then(() => {
+            onSnapshot(docRef, (snap) => {
+                wordDisplay.innerText = snap.exists() ? snap.data().value : 'Tap to set word';
+                loadingView.classList.add('hidden');
+                mainView.classList.remove('hidden');
+            });
+        });
+
+        lucide.createIcons();
+    </script>
+</body>
+</html>
