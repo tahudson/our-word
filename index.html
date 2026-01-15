@@ -32,7 +32,6 @@
                     id="word-input" 
                     class="w-full text-3xl font-bold text-center border-b-2 border-blue-500 outline-none py-2 bg-transparent" 
                     placeholder="Type something..."
-                    onkeydown="if(event.key === 'Enter') saveWord()"
                 >
                 <div class="flex justify-center gap-4">
                     <button onclick="toggleEdit(false)" class="p-3 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200">
@@ -83,7 +82,7 @@
                 wordInput.value = wordDisplay.innerText === 'Tap to set word' ? '' : wordDisplay.innerText;
                 displayMode.classList.add('hidden');
                 editMode.classList.remove('hidden');
-                wordInput.focus();
+                setTimeout(() => wordInput.focus(), 10);
             } else {
                 displayMode.classList.remove('hidden');
                 editMode.classList.add('hidden');
@@ -96,8 +95,19 @@
             try {
                 await setDoc(docRef, { value: val });
                 toggleEdit(false);
-            } catch (e) { console.error(e); }
+            } catch (e) { 
+                console.error("Save error:", e);
+                alert("Permission denied. Check Firestore rules.");
+            }
         };
+
+        // Improved event listener for Enter key
+        wordInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                saveWord();
+            }
+        });
 
         // Initialize
         signInAnonymously(auth).then(() => {
@@ -106,8 +116,10 @@
                 loadingView.classList.add('hidden');
                 mainView.classList.remove('hidden');
             }, (err) => {
-                console.error("Firestore error:", err);
+                console.error("Firestore snapshot error:", err);
             });
+        }).catch(err => {
+            console.error("Auth error:", err);
         });
 
         lucide.createIcons();
