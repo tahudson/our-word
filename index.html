@@ -27,7 +27,13 @@
             </div>
 
             <div id="edit-mode" class="hidden flex flex-col items-center gap-6">
-                <input type="text" id="word-input" class="w-full text-3xl font-bold text-center border-b-2 border-blue-500 outline-none py-2 bg-transparent" placeholder="Type something...">
+                <input 
+                    type="text" 
+                    id="word-input" 
+                    class="w-full text-3xl font-bold text-center border-b-2 border-blue-500 outline-none py-2 bg-transparent" 
+                    placeholder="Type something..."
+                    onkeydown="if(event.key === 'Enter') saveWord()"
+                >
                 <div class="flex justify-center gap-4">
                     <button onclick="toggleEdit(false)" class="p-3 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200">
                         <i data-lucide="x" class="w-6 h-6"></i>
@@ -48,7 +54,6 @@
         import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // TODO: REPLACE THIS WITH YOUR FIREBASE CONFIG FROM FIREBASE CONSOLE
         const firebaseConfig = {
           apiKey: "AIzaSyDZr28dUU1Td_iENVBYJmSwaUDqPkb9vOs",
           authDomain: "oneword-1f63a.firebaseapp.com",
@@ -100,6 +105,8 @@
                 wordDisplay.innerText = snap.exists() ? snap.data().value : 'Tap to set word';
                 loadingView.classList.add('hidden');
                 mainView.classList.remove('hidden');
+            }, (err) => {
+                console.error("Firestore error:", err);
             });
         });
 
