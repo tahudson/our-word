@@ -26,22 +26,24 @@
                 </button>
             </div>
 
-            <div id="edit-mode" class="hidden flex flex-col items-center gap-6">
+            <!-- Form handles 'Enter' key natively across all browsers -->
+            <form id="edit-mode" class="hidden flex flex-col items-center gap-6" onsubmit="event.preventDefault(); saveWord();">
                 <input 
                     type="text" 
                     id="word-input" 
                     class="w-full text-3xl font-bold text-center border-b-2 border-blue-500 outline-none py-2 bg-transparent" 
                     placeholder="Type something..."
+                    autocomplete="off"
                 >
                 <div class="flex justify-center gap-4">
-                    <button onclick="toggleEdit(false)" class="p-3 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200">
+                    <button type="button" onclick="toggleEdit(false)" class="p-3 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200">
                         <i data-lucide="x" class="w-6 h-6"></i>
                     </button>
-                    <button onclick="saveWord()" class="p-3 rounded-full bg-blue-500 text-white hover:bg-blue-600 shadow-lg shadow-blue-200">
+                    <button type="submit" class="p-3 rounded-full bg-blue-500 text-white hover:bg-blue-600 shadow-lg shadow-blue-200">
                         <i data-lucide="check" class="w-6 h-6"></i>
                     </button>
                 </div>
-            </div>
+            </form>
         </div>
         
         <p class="text-center mt-8 text-slate-400 text-sm font-medium">Updates instantly for both of you</p>
@@ -82,7 +84,7 @@
                 wordInput.value = wordDisplay.innerText === 'Tap to set word' ? '' : wordDisplay.innerText;
                 displayMode.classList.add('hidden');
                 editMode.classList.remove('hidden');
-                setTimeout(() => wordInput.focus(), 10);
+                setTimeout(() => wordInput.focus(), 50);
             } else {
                 displayMode.classList.remove('hidden');
                 editMode.classList.add('hidden');
@@ -100,14 +102,6 @@
                 alert("Permission denied. Check Firestore rules.");
             }
         };
-
-        // Improved event listener for Enter key
-        wordInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                saveWord();
-            }
-        });
 
         // Initialize
         signInAnonymously(auth).then(() => {
